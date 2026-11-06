@@ -1,0 +1,47 @@
+{
+  "name": "opencode-deepai-code-pure",
+  "version": "0.1.0",
+  "description": "Magpie/OpenCode provider plugin: DeepAI Code upstream, fully self-contained (no Go gateway)",
+  "type": "module",
+  "main": "./index.mjs",
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "files": [
+    "index.mjs", "lib/", "page/", "deepai.gateway.js", "README.md"
+  ],
+  "keywords": ["opencode", "opencode-plugin", "magpie", "deepai", "provider"],
+  "license": "MIT",
+  "magpie": {
+    "name": "DeepAI Code (纯插件)",
+    "summary": {
+      "zh": "直连 api.deepai.org：号池、机器指纹、Theos 配额、注册、用量全部在插件内完成，无需 Go 网关。",
+      "en": "Self-contained DeepAI Code provider: pool, machine fingerprint, Theos quota, signup, usage."
+    },
+    "maxConcurrency": 4,
+    "gateway": "./deepai.gateway.js",
+    "page": {
+      "title": "DeepAI Code",
+      "file": "page/index.html",
+      "icon": "page/icon.svg",
+      "titles": { "zh": "DeepAI Code 控制台" }
+    },
+    "panels": [
+      { "slot": "provider", "file": "page/index.html", "title": "DeepAI 用量" }
+    ],
+    "permissions": ["usage:summary", "providers:list"],
+    "options": {
+      "origin": "https://api.deepai.org",
+      "domain": "",
+      "mailBackend": "static",
+      "tempMailBase": "",
+      "tempMailAdminKey": "",
+      "verify": true,
+      "group": "default",
+      "importDesktop": true,
+      "desktopPath": "",
+      "machineID": "",
+      "masterKey": ""
+    }
+  }
+}

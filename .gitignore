@@ -1,0 +1,21 @@
+# 插件运行时状态（含上游 API Key，绝不入库）
+deepai-pure-state.json
+*.state.json
+
+# 凭据 / 环境
+.env
+.env.*
+!.env.example
+*.bin
+
+# Bun / Node
+node_modules/
+bun.lockb
+bun.lock
+*.log
+
+# 临时
+.tmp*
+.tmptest/
+__pycache__/
+.DS_Store
