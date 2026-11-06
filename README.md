@@ -15,6 +15,21 @@ magpie plugin add zeroxsama/opencode-deepai-code-pure#<commit>
 
 仓库根目录就是插件包（`package.json` 在此），magpie 用 Bun 直接拉取加载。
 
+## 本地开发 / 推送
+
+本仓库在 `D:/work/ai/opencode-deepai-code-pure`。改完文件后：
+
+```bash
+node scripts/push.mjs "fix: 描述改动"
+```
+
+> 该脚本用 GitHub Git Data API 上传当前工作区到 `main`（本环境 `git push`
+> over HTTPS 会被 reset）。它基于远程当前 commit 生成新 commit，不依赖本地
+> git 历史；token 从 git 凭据管理器读取，不落盘。`scripts/` 已被
+> `.gitignore` 排除，不会进插件包。
+
+本地自测：`node selftest.mjs` 或 `bun selftest.mjs`（18 项黑盒断言）。
+
 ## 架构
 
 ```text
