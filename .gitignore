@@ -19,3 +19,6 @@ bun.lock
 .tmptest/
 __pycache__/
 .DS_Store
+
+# 本地维护脚本（不进插件包）
+scripts/
