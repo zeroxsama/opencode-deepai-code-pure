@@ -109,6 +109,7 @@ const options = {
   origin: ORIGIN,
   machineID: "11111111-2222-3333-4444-555555555555",
   importDesktop: false, // 自测不碰真实桌面凭据
+  noAdminServer: true,  // 自测不起账号管理本地服务
 }
 
 try {

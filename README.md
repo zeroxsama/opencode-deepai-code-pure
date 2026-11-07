@@ -15,6 +15,14 @@ magpie plugin add zeroxsama/opencode-deepai-code-pure#<commit>
 
 仓库根目录就是插件包（`package.json` 在此），magpie 用 Bun 直接拉取加载。
 
+> **界面里在哪点登录**：本插件自带一个只读「DeepAI Code 控制台」侧边栏页
+> （`magpie.page`），它只显示用量/供应商/选项，不能画登录表单——magpie 的沙盒
+> 页面无 fetch、无表单、read 不给账号。登录按钮由 **magpie 宿主**按插件的
+> `auth.methods` 原生渲染，和 qwenwork 等插件一样：去「**插件 → 已安装**」或
+> 「**供应商**」页找到 `deepai` 这一行，点行上的「**登录 / 添加账号 / Sign in**」，
+> 会弹出 4 种方式（填 Key / 导入桌面端凭据 / 浏览器登录 / 注册入池）；
+> 或在终端 `magpie plugin login deepai`。别在控制台页找登录按钮。
+
 ## 本地开发 / 推送
 
 本仓库在 `D:/work/ai/opencode-deepai-code-pure`。改完文件后：
@@ -126,11 +134,30 @@ magpie plugin options deepai '{
 `find_service`、`models`、`accounts`、`add_account`、`import_desktop`、
 `stats`、`settings`、`register`。地址 `/mcp/magpie/tools`。
 
+## 账号管理控制台（侧边栏 tab）
+
+侧边栏「DeepAI Code 控制台」是一个带路页：插件宿主加载时起一个本地服务
+（`127.0.0.1:3493`，端口可用 `magpie plugin options deepai '{"adminPort":3494}'`
+调整），页面直接跳过去。服务与插件同进程、直接读写号池，所以能做**完整账号管理**：
+
+- 号池账号列表（脱敏，绝不回显完整 API Key）、启用/停用、改分组/备注、删除
+- 添加 API Key、导入桌面端凭据、注册新账号入池
+- 查单个账号 Theos 配额、用量摘要、全账号配额复探
+- 刷新模型目录、累计统计 / 最近日志、设置（兜底模型 / 最大重试）
+
+服务每个 `/api/` 路由用随机 token 守卫 + 校验 Host 只本机（对齐官方 host part
+安全要求）；`magpie web` 远程访问时走 `magpie.service` 转发。只读的用量/供应商/
+选项速览仍挂在「供应商」页的 panel 里作降级（服务没起来时可用）。
+
+`noAdminServer:true` 可关闭该服务（纯 CLI / 测试环境）。
+
 ## 自测
 
 ```bash
-bun ./magpie-pure/selftest.mjs     # 或 node ./magpie-pure/selftest.mjs
+node selftest.mjs        # 18 项：直连链路 / 号池 / 协议 / 用量 / 加密
+node test-admin.mjs      # 16 项：账号管理服务的 guard / CRUD / 设置 / 配额
 ```
 
-自测起一个 mock 上游（含 409 capacity、401 换号、模型目录、Theos、用量、注册），
-黑盒验证私有头、号池换号、协议归一化、用量聚合、别名、状态加密等全链路。
+`selftest.mjs` 起一个 mock 上游（含 409 capacity、401 换号、模型目录、Theos、用量、
+注册），黑盒验证私有头、号池换号、协议归一化、用量聚合、别名、状态加密等全链路；
+`test-admin.mjs` 起真实 HTTP 服务，验证账号管理 REST API 的鉴权、脱敏与增删改查。

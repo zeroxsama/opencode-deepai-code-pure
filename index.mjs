@@ -28,12 +28,14 @@ import { buildTools } from "./lib/tools.mjs"
 import {
   ORIGIN, MODEL_BASE, P, H, DEFAULT_MODEL, BUILTIN_ALIASES,
 } from "./lib/constants.mjs"
+import { startAdminServer } from "./lib/admin-server.mjs"
 import {
   transformChatResponse, rewriteSSEResponse, parseUsage, chatTextLen,
 } from "./lib/transform.mjs"
 
 const PROVIDER = "deepai"
 const AFFINITY_OK = /^[A-Za-z0-9._:-]{1,256}$/
+const DEFAULT_ADMIN_PORT = 3493
 
 // 单个模块实例里共享的运行时状态（所有登录账号共用一个号池）。
 // 用 input.directory 作为持久化目录。
@@ -262,9 +264,30 @@ function runtime(input, options) {
   return RUNTIME
 }
 
+// 账号管理本地服务（magpie page host part）：与宿主同进程，共享 RUNTIME.state。
+// 幂等、不阻塞插件加载（端口占用只记日志，页面会在跳转失败时给提示）。
+let ADMIN = null
+function ensureAdminServer(rt) {
+  if (ADMIN) return ADMIN
+  if (rt.opts.noAdminServer) { ADMIN = Promise.resolve(null); return ADMIN }
+  const port = Number(rt.opts.adminPort) || DEFAULT_ADMIN_PORT
+  ADMIN = startAdminServer({
+    port,
+    getRuntime: async () => { await rt.ready(); return rt },
+  }).then((info) => {
+    rt.log(`账号管理服务已启动：http://127.0.0.1:${info.port}`)
+    return info
+  }).catch((e) => {
+    rt.log(`账号管理服务启动失败：${e.message}`)
+    return null
+  })
+  return ADMIN
+}
+
 export const DeepAIPurePlugin = async (input, options) => {
   const rt = runtime(input, options)
   await rt.ready()
+  ensureAdminServer(rt) // 起账号管理本地服务（幂等，不阻塞）
 
   const getAuth = (auth) => {
     // magpie 账号 -> 号池账号 id（存在 auth.metadata.acctID）

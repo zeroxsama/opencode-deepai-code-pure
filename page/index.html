@@ -4,15 +4,61 @@
 <meta charset="utf-8">
 <link rel="stylesheet" href="style.css">
 <script src="_magpie/bridge.js"></script>
+<script src="view.js" defer></script>
 <script src="app.js" defer></script>
 </head>
 <body>
 <h1>DeepAI Code · 纯插件控制台</h1>
-<p class="sub">号池、配额与用量由插件在 Bun 宿主内直连上游维护。</p>
+<p class="sub">号池、配额与用量由插件在 Bun 宿主内直连上游维护。本页是 magpie 沙盒页，只读用量/供应商、可编辑插件选项。</p>
+
+<section class="login-card">
+  <h2>账号 / 登录 / 注册</h2>
+  <p class="sub">沙盒页面无 fetch、无表单、read 不给账号 —— 登录与注册按钮由宿主按插件的
+     <code>auth.methods</code> 原生渲染，或走 MCP 工具。这里给入口。</p>
+  <p class="hint"><b>界面</b>：去「<b>插件 → 已安装</b>」或「<b>供应商</b>」页，找到
+     <code>deepai</code> 行，点「<b>登录 / 添加账号 / Sign in</b>」→ 选 4 种方式
+     （填 Key / 导入桌面端凭据 / 浏览器登录 / <b>注册新账号入池</b>）。</p>
+  <p class="hint"><b>命令行</b>（装了 magpie 的机器）：</p>
+  <div class="cmd">
+    <code id="login-cmd">magpie plugin login deepai</code>
+    <button id="copy-login" type="button">复制</button>
+  </div>
+  <p class="hint"><b>注册新账号</b>（让 agent 调 MCP 工具，或在登录弹窗选方式四；需先配好邮箱后端选项）：</p>
+  <div class="cmd">
+    <code id="register-cmd">deepai-pure_register</code>
+    <button id="copy-register" type="button">复制</button>
+  </div>
+  <ol class="methods">
+    <li>填上游 API Key（桌面端凭据文件里的 apiKey）</li>
+    <li>导入桌面端凭据（自动读 <code>~/.deepai-code/.../deepai-account.bin</code>）</li>
+    <li>浏览器登录（回环 <code>/auth-callback</code> 换 Key）</li>
+    <li>注册新账号入池（<code>lib/register.mjs</code> 流水线）</li>
+  </ol>
+  <p class="hint">桌面端登录过、或设了 <code>DEEPAI_API_KEY</code> 时账号自动入池，直接用
+     <code>deepai/glm-5.3-flash</code> 即可；<code>deepai-pure_accounts</code> 查看号池。</p>
+</section>
 
 <section>
   <h2>magpie 用量总览</h2>
+  <div class="ctl" id="periods">
+    <span class="ctl-label">周期</span>
+    <button type="button" data-period="today">今天</button>
+    <button type="button" data-period="7d">7 天</button>
+    <button type="button" data-period="30d">30 天</button>
+  </div>
+  <div class="ctl" id="sorts">
+    <span class="ctl-label">模型排序</span>
+    <button type="button" data-sort="tokens">Token</button>
+    <button type="button" data-sort="calls">调用</button>
+    <button type="button" data-sort="cost">费用</button>
+  </div>
+  <p class="sub" id="since"></p>
+  <p class="err" id="usage-error" hidden></p>
   <table id="usage"><tbody><tr><td>加载中…</td></tr></tbody></table>
+  <h3>按模型</h3>
+  <p class="hint">来自 <code>usage:summary</code>：magpie 网关记录的全局调用，按模型聚合（含所有供应商）。</p>
+  <p class="sub" id="models-empty" hidden>这段时间没有调用。</p>
+  <ul id="models" class="model-list"><li>加载中…</li></ul>
 </section>
 
 <section>
@@ -22,8 +68,15 @@
 
 <section>
   <h2>插件选项</h2>
-  <pre id="options">加载中…</pre>
-  <p class="hint">用 <code>magpie plugin options deepai '{"domain":"…","mailBackend":"cf"}'</code> 调整。</p>
+  <p class="hint">直接编辑并保存（写入插件 options，重启插件后生效）。留空 = 沿用默认。
+     也可用 <code>magpie plugin options deepai '{...}'</code>。</p>
+  <div id="option-form" class="opt-form"></div>
+  <div class="cmd">
+    <button id="opt-save" type="button">保存选项</button>
+    <span class="opt-msg" id="opt-msg"></span>
+  </div>
+  <h3>当前原始选项</h3>
+  <pre id="options-json">加载中…</pre>
 </section>
 
 <div id="msg"></div>

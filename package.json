@@ -22,15 +22,17 @@
     "gateway": "./deepai.gateway.js",
     "page": {
       "title": "DeepAI Code",
-      "file": "page/index.html",
+      "file": "page/boot.html",
       "icon": "page/icon.svg",
-      "titles": { "zh": "DeepAI Code 控制台" }
+      "titles": { "zh": "DeepAI Code 控制台" },
+      "service": { "port": 3493, "option": "adminPort" }
     },
     "panels": [
       { "slot": "provider", "file": "page/index.html", "title": "DeepAI 用量" }
     ],
     "permissions": ["usage:summary", "providers:list"],
     "options": {
+      "adminPort": 3493,
       "origin": "https://api.deepai.org",
       "domain": "",
       "mailBackend": "static",
