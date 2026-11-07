@@ -138,18 +138,54 @@
     }, 1100)
   }
 
-  // ---------- 登录 / 注册命令一键复制 ----------
-  function bindCopy(btnId, codeId) {
+  // ---------- 一键复制（通用） ----------
+  function bindCopy(btnId, codeId, label) {
     try {
       var btn = $(btnId), el = $(codeId)
       if (!btn || !el) return
+      var base = label || "复制"
       btn.addEventListener("click", function () {
-        var t = el.textContent || ""
-        var ok = function () { btn.textContent = "已复制"; setTimeout(function () { btn.textContent = "复制" }, 1500) }
+        var t = (el.textContent || "").trim()
+        var ok = function () { btn.textContent = "已复制"; setTimeout(function () { btn.textContent = base }, 1500) }
         if (navigator.clipboard && navigator.clipboard.writeText)
           navigator.clipboard.writeText(t).then(ok, function () { btn.textContent = "请手动复制" })
         else btn.textContent = "请手动复制"
       })
+    } catch (e) {}
+  }
+
+  // ---------- 账号管理（独立窗口打开本地服务，不改动本 iframe 的 origin） ----------
+  // 端口读插件选项 adminPort；magpie web 远程时 magpie.service 是同源转发地址。
+  function adminURL() {
+    var opts = state.options || {}
+    var port = Number(opts.adminPort) || 3493
+    var svc = ""
+    try {
+      var s = globalThis.magpie && globalThis.magpie.service
+      if (typeof s === "string" && /^https?:\/\//.test(s)) svc = s.replace(/\/+$/, "")
+    } catch (e) {}
+    return svc ? svc + "/" : "http://127.0.0.1:" + port + "/"
+  }
+  function bindAdmin() {
+    try {
+      var urlEl = $("admin-url")
+      var url = adminURL()
+      if (urlEl) urlEl.textContent = url
+      var anchor = $("admin-link")
+      if (anchor) { anchor.href = url; anchor.setAttribute("target", "_blank"); anchor.setAttribute("rel", "noopener") }
+      var openBtn = $("open-admin")
+      if (openBtn) openBtn.addEventListener("click", function () {
+        // 顶层新窗口：iframe 本身不导航，宿主 postMessage('null') 不会失效。
+        var w = null
+        try { w = window.open(url, "_blank", "noopener") } catch (e) {}
+        if (!w) {
+          // sandbox 无 allow-popups 时 window.open 静默失败，引导复制地址手动打开。
+          var n = $("admin-note")
+          if (n) n.textContent = "弹窗被拦截，请点地址旁的链接，或复制地址到浏览器打开：" + url
+          if (anchor) anchor.focus()
+        }
+      })
+      bindCopy("copy-admin", "admin-url", "复制地址")
     } catch (e) {}
   }
 
@@ -177,7 +213,6 @@
 
     bindOptions()
     bindCopy("copy-login", "login-cmd")
-    bindCopy("copy-register", "register-cmd")
 
     // 三个数据源各自兜底，一个失败不拖垮整页
     await loadUsage()
@@ -185,6 +220,8 @@
     catch (e) { var ul = $("providers"); if (ul) ul.innerHTML = "<li>读取供应商失败</li>" }
     try { renderOptions(await magpie.options.get()) }
     catch (e) { text("options-json", "（无选项）") }
+    // options 就绪后再算账号管理地址（adminPort 可能来自 options）
+    bindAdmin()
 
     try { magpie.onTheme(function (t) { lang = (t && t.lang) || lang; paint() }) } catch (e) {}
     // 页面开着时每分钟刷新用量

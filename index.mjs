@@ -271,8 +271,14 @@ function ensureAdminServer(rt) {
   if (ADMIN) return ADMIN
   if (rt.opts.noAdminServer) { ADMIN = Promise.resolve(null); return ADMIN }
   const port = Number(rt.opts.adminPort) || DEFAULT_ADMIN_PORT
+  // magpie web 转发时 Host 可能是 magpie 的地址，把它加入白名单。
+  const hosts = []
+  try {
+    const su = rt.input && rt.input.serverUrl
+    if (su) hosts.push(new URL(su).host.toLowerCase())
+  } catch (e) {}
   ADMIN = startAdminServer({
-    port,
+    port, hosts,
     getRuntime: async () => { await rt.ready(); return rt },
   }).then((info) => {
     rt.log(`账号管理服务已启动：http://127.0.0.1:${info.port}`)

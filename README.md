@@ -134,20 +134,30 @@ magpie plugin options deepai '{
 `find_service`、`models`、`accounts`、`add_account`、`import_desktop`、
 `stats`、`settings`、`register`。地址 `/mcp/magpie/tools`。
 
-## 账号管理控制台（侧边栏 tab）
+## 账号管理控制台
 
-侧边栏「DeepAI Code 控制台」是一个带路页：插件宿主加载时起一个本地服务
-（`127.0.0.1:3493`，端口可用 `magpie plugin options deepai '{"adminPort":3494}'`
-调整），页面直接跳过去。服务与插件同进程、直接读写号池，所以能做**完整账号管理**：
+侧边栏「DeepAI Code 控制台」是稳定的沙盒页（用量 / 供应商 / 选项）。完整账号管理
+由插件宿主起的本地服务提供，在**独立浏览器窗口**打开：控制台里点「在新窗口打开」
+或复制链接到浏览器即可。
+
+> **为什么不在 tab 内直接跳转**：tab 是 `sandbox="allow-scripts"` 的 opaque-origin
+> iframe，`location.replace` 到 `127.0.0.1` 会把它的 origin 从 `null` 变成具体地址，
+> 部分宿主脚本仍用 `'null'` 作 `postMessage` 的 targetOrigin，会抛
+> `Invalid target origin 'null'` 并把页面判成「加载失败」。改成顶层新窗口打开，
+> iframe 自身不导航，宿主通信不受影响。
+
+服务：`127.0.0.1:3493`（端口用 `magpie plugin options deepai '{"adminPort":3494}'`
+调整；`magpie web` 远程时用 `magpie.service` 转发地址）。服务与插件同进程、直接读写
+号池，能做**完整账号管理**：
 
 - 号池账号列表（脱敏，绝不回显完整 API Key）、启用/停用、改分组/备注、删除
 - 添加 API Key、导入桌面端凭据、注册新账号入池
 - 查单个账号 Theos 配额、用量摘要、全账号配额复探
 - 刷新模型目录、累计统计 / 最近日志、设置（兜底模型 / 最大重试）
 
-服务每个 `/api/` 路由用随机 token 守卫 + 校验 Host 只本机（对齐官方 host part
-安全要求）；`magpie web` 远程访问时走 `magpie.service` 转发。只读的用量/供应商/
-选项速览仍挂在「供应商」页的 panel 里作降级（服务没起来时可用）。
+服务根页把随机 token 注入页面，每个 `/api/` 路由用该 token 守卫 + Host 白名单
+（对齐官方 host part 安全要求）；内嵌 UI 用相对路径请求，兼容 `magpie web` 子路径转发。
+只读的用量/供应商/选项速览仍挂在「供应商」页的 panel 里。
 
 `noAdminServer:true` 可关闭该服务（纯 CLI / 测试环境）。
 

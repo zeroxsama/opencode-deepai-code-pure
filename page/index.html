@@ -12,28 +12,32 @@
 <p class="sub">号池、配额与用量由插件在 Bun 宿主内直连上游维护。本页是 magpie 沙盒页，只读用量/供应商、可编辑插件选项。</p>
 
 <section class="login-card">
-  <h2>账号 / 登录 / 注册</h2>
-  <p class="sub">沙盒页面无 fetch、无表单、read 不给账号 —— 登录与注册按钮由宿主按插件的
-     <code>auth.methods</code> 原生渲染，或走 MCP 工具。这里给入口。</p>
-  <p class="hint"><b>界面</b>：去「<b>插件 → 已安装</b>」或「<b>供应商</b>」页，找到
-     <code>deepai</code> 行，点「<b>登录 / 添加账号 / Sign in</b>」→ 选 4 种方式
-     （填 Key / 导入桌面端凭据 / 浏览器登录 / <b>注册新账号入池</b>）。</p>
-  <p class="hint"><b>命令行</b>（装了 magpie 的机器）：</p>
+  <h2>账号管理</h2>
+  <p class="sub">完整号池管理（加 Key / 删号 / 启停 / 分组 / 导入 / 注册 / 查配额 / 设置）
+     由插件宿主的本地服务提供，在<b>独立浏览器窗口</b>打开——不会改动本沙盒页的 origin，
+     避免宿主 postMessage 通道被破坏。</p>
+  <p class="hint">服务地址（端口随 <code>adminPort</code> 选项变化；<code>magpie web</code> 远程时用其转发地址）：</p>
+  <div class="cmd">
+    <code id="admin-url">http://127.0.0.1:3493/</code>
+    <button id="open-admin" type="button">在新窗口打开</button>
+    <button id="copy-admin" type="button">复制地址</button>
+  </div>
+  <p class="hint"><a id="admin-link" href="http://127.0.0.1:3493/" target="_blank" rel="noopener">在新窗口打开账号管理 ↗</a>
+     （若弹窗被拦截，用此链接或复制地址到浏览器打开）</p>
+  <p class="hint" id="admin-note">若打不开，说明服务未启动：重启插件（关→开）后重试，或看
+     <code>magpie plugin</code> 日志里的「账号管理服务已启动」。</p>
+
+  <h3>宿主原生登录 / 注册入口</h3>
+  <p class="hint">登录表单由 magpie 按插件 <code>auth.methods</code> 渲染：去「<b>插件 → 已安装</b>」
+     或「<b>供应商</b>」页找到 <code>deepai</code> 行，点「<b>登录 / 添加账号 / Sign in</b>」
+     → 4 种方式（填 Key / 导入桌面端凭据 / 浏览器登录 / 注册新账号入池）。
+     或在装了 magpie 的机器上执行：</p>
   <div class="cmd">
     <code id="login-cmd">magpie plugin login deepai</code>
     <button id="copy-login" type="button">复制</button>
   </div>
-  <p class="hint"><b>注册新账号</b>（让 agent 调 MCP 工具，或在登录弹窗选方式四；需先配好邮箱后端选项）：</p>
-  <div class="cmd">
-    <code id="register-cmd">deepai-pure_register</code>
-    <button id="copy-register" type="button">复制</button>
-  </div>
-  <ol class="methods">
-    <li>填上游 API Key（桌面端凭据文件里的 apiKey）</li>
-    <li>导入桌面端凭据（自动读 <code>~/.deepai-code/.../deepai-account.bin</code>）</li>
-    <li>浏览器登录（回环 <code>/auth-callback</code> 换 Key）</li>
-    <li>注册新账号入池（<code>lib/register.mjs</code> 流水线）</li>
-  </ol>
+  <p class="hint">注册新账号：让 agent 调 MCP 工具 <code>deepai-pure_register</code>，或在登录弹窗选方式四
+     （需先配好邮箱后端选项）。</p>
   <p class="hint">桌面端登录过、或设了 <code>DEEPAI_API_KEY</code> 时账号自动入池，直接用
      <code>deepai/glm-5.3-flash</code> 即可；<code>deepai-pure_accounts</code> 查看号池。</p>
 </section>

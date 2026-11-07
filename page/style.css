@@ -9,6 +9,8 @@ th { font-weight: 500; opacity: 0.75; }
 tr.bad td { color: #c0392b; }
 .subv { font-size: 0.72rem; opacity: 0.6; margin-left: 6px; }
 ul { margin: 0; padding-left: 18px; font-size: 0.82rem; }
+.login-card a { color: var(--magpie-accent, #3b6ef5); text-decoration: none; }
+.login-card a:hover { text-decoration: underline; }
 code { font-size: 0.78rem; opacity: 0.8; }
 pre { font-size: 0.78rem; white-space: pre-wrap; background: rgba(128,128,128,0.08); padding: 8px; border-radius: 6px; }
 .err { color: #c0392b; font-size: 0.8rem; }

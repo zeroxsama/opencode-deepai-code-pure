@@ -22,7 +22,7 @@
     "gateway": "./deepai.gateway.js",
     "page": {
       "title": "DeepAI Code",
-      "file": "page/boot.html",
+      "file": "page/index.html",
       "icon": "page/icon.svg",
       "titles": { "zh": "DeepAI Code 控制台" },
       "service": { "port": 3493, "option": "adminPort" }
